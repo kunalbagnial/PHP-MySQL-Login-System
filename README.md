@@ -12,4 +12,4 @@ login/logout functionality with core php
 <img src="screenshot_4.png"/>
 
 <h3>(4). Logout</h3>
-<inmg src="screenshot_5.png"/>
+<img src="screenshot_5.png"/>
