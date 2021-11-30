@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap');
+
+body {
+    color: #282a35;
+    font-size: 17px;
+    font-family: 'Work Sans', sans-serif;
+}
+
+.btn {
+    font-size: inherit;
+    font-weight: 600;
+}
+
+.alert {
+    padding: 8px 12px;
+}
+
+h1 {
+    font-size: 30px;
+    font-weight: 600;
+}
+
+.form-wrap .form-label {
+    font-weight: 600;
+}
+
+.form-wrap .form-control {
+    height: 40px;
+}
+
+.form-wrap p:last-child>a {
+    font-weight: 600;
+}
+
+.user-info-wrap .username-text {
+    margin: 20px 0 15px;
+    font-size: 22px;
+    font-weight: 600;
+}
