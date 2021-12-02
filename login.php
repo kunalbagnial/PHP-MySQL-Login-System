@@ -2,15 +2,15 @@
 # start session
 session_start();
 
-# redirect to weclome page if user is already logged in
+# redirect to welcome page if user is already logged in
 if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] == TRUE) {
-    echo "<script>window.location.href='http://localhost/php-login/welcome.php'</script>";
+    echo "<script>window.location.href='welcome.php';</script>";
 }
 
 # database connection
 require_once 'config.php';
 
-# declare variables and set to emty values
+# declare variables and set to empty values
 $username = $password = "";
 $username_err = $password_err = $login_err = "";
 
@@ -20,39 +20,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty(trim($_POST["username"]))) {
         $username_err = "Please enter your username";
     } else {
-        $username = mysqli_real_escape_string($conn, trim($_POST["username"]));
+        $username = trim($_POST["username"]);
     }
 
     # check password
-    if (empty(trim($_POST["password"]))) {
+    if (empty($_POST["password"])) {
         $password_err = "Please enter your password";
     } else {
-        $password = mysqli_real_escape_string($conn, trim($_POST["password"]));
+        $password = trim($_POST["password"]);
     }
 
-    # check input erros and credentials
+    # check credentials
     if (empty($username_err) && empty($password_err)) {
+        # prepare a select statement
+        $sql = "SELECT * FROM users WHERE username = ?";
 
-        $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
-        $result = mysqli_query($conn, $sql);
-        $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
-        $count = mysqli_num_rows($result);
+        if ($stmt = mysqli_prepare($link, $sql)) {
+            # bind varibales to the prepared statement as parameters
+            mysqli_stmt_bind_param($stmt, "s", $username);
 
-        if ($count == 1 && $row["username"] == $username && $row["password"] == $password) {
-            # start new session
-            session_start();
+            # execute the statement
+            if (mysqli_stmt_execute($stmt)) {
+                # store the result
+                mysqli_stmt_store_result($stmt);
 
-            # store data in session varibales
-            $_SESSION["loggedin"] = TRUE;
-            $_SESSION["username"] = $username;
+                # if username exists then verify password
+                if (mysqli_stmt_num_rows($stmt) == 1) {
+                    # bind result variables
+                    mysqli_stmt_bind_result($stmt, $id, $username, $email, $hashed_password);
 
-            # redirect to welcome page
-            echo "<script>window.location.href='http://localhost/php-login/welcome.php'</script>";
-        } else {
-            # display error message if login failed
-            $login_err = "Invalid username or pasword";
+                    if (mysqli_stmt_fetch($stmt)) {
+                        if (password_verify($password, $hashed_password)) {
+                            # start a new session if password is correct
+                            session_start();
+
+                            # store data into session variables
+                            $_SESSION["loggedin"] = TRUE;
+                            $_SESSION["username"] = $username;
+
+                            # redirect to welcome page
+                            header("Location: welcome.php");
+                        } else {
+                            $login_err = "Invalid username or password";
+                        }
+                    }
+                } else {
+                    $login_err = "Invalid username or password";
+                }
+            }
+            # close the statment 
+            mysqli_stmt_close($stmt);
         }
     }
+    # close the connection
+    mysqli_close($link);
 }
 ?>
 

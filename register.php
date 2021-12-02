@@ -9,59 +9,99 @@ $username = $email = $password = "";
 # processing form data when form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     # validate username
-    if (empty($_POST["username"])) {
+    if (empty(trim($_POST["username"]))) {
         $username_err = "Please enter a username";
     } else {
-        $username = mysqli_real_escape_string($conn, trim($_POST["username"]));
+        $username = trim($_POST["username"]);
         if (!ctype_alnum(str_replace(array("-", "_", "@"), "", $username))) {
-            $username_err = "Username can only contain letters, numbers, and symbols like '_', '-', or '@'";
+            $username_err = "Username can only contain letters, numbers, and symbols like '_' , '-' , or '@'";
+        } else {
+            # prepare a select statement
+            $sql = "SELECT id FROM users WHERE username = ?";
+
+            if ($stmt = mysqli_prepare($link, $sql)) {
+                # bind variable to the prepared statement as parameter
+                mysqli_stmt_bind_param($stmt, "s", $username);
+
+                # execute the prepared statement 
+                if (mysqli_stmt_execute($stmt)) {
+                    # store the result
+                    mysqli_stmt_store_result($stmt);
+
+                    if (mysqli_stmt_num_rows($stmt) == 1) {
+                        $username_err = "Username is already registered";
+                    }
+                }
+            }
+            # close statement
+            mysqli_stmt_close($stmt);
         }
     }
 
-    # validate email 
-    if (empty($_POST["email"])) {
+    # validate email
+    if (empty(trim($_POST["email"]))) {
         $email_err = "Please enter an email address";
     } else {
-        $email = mysqli_real_escape_string($conn, trim($_POST["email"]));
+        $email = filter_var(trim($_POST["email"]), FILTER_SANITIZE_EMAIL);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $email_err = "Please enter a valid email address";
+            $email_err = "Invalid email address";
+        } else {
+            # prepare a select statement
+            $sql = "SELECT id FROM users WHERE email = ?";
+
+            if ($stmt = mysqli_prepare($link, $sql)) {
+                # bind variable to the prepared statement as a parameter
+                mysqli_stmt_bind_param($stmt, "s", $email);
+
+                # execute the prepared statment
+                if (mysqli_stmt_execute($stmt)) {
+                    # store the result
+                    mysqli_stmt_store_result($stmt);
+
+                    if (mysqli_stmt_num_rows($stmt) == 1) {
+                        $email_err = "Email is already registered";
+                    }
+                }
+            }
+            # close statement
+            mysqli_stmt_close($stmt);
         }
     }
 
     # validate password
-    if (empty($_POST["password"])) {
+    if (empty(trim($_POST["password"]))) {
         $password_err = "Please enter a password";
     } else {
-        $password = mysqli_real_escape_string($conn, trim($_POST["password"]));
+        $password = trim($_POST["password"]);
         if (strlen($password) < 6) {
-            $password_err = "Password must include at least 6 characters";
-        }
-    }
-
-    # check if username or email is already registered
-    $check_existing_user = "SELECT * FROM users WHERE username='$username' OR email='$email'";
-    $result = mysqli_query($conn, $check_existing_user);
-    $count = mysqli_num_rows($result);
-
-    if ($count != 0) {
-        $row = mysqli_fetch_assoc($result);
-        if ($row["username"] == $username) {
-            $username_err = "Username is already registered";
-        }
-        if ($row["email"] == $email) {
-            $email_err = "Email is already resgistered";
+            $password_err = "Password must contain at least 6 characters";
         }
     }
 
     # check errors before inserting input data into database
     if (empty($username_err) && empty($email_err) && empty($password_err)) {
+        # prepare an insert statement
+        $sql = "INSERT INTO users (username, email, password) VALUES (?, ? ,?)";
 
-        $sql = "INSERT INTO users (username, email, password) VALUES ('$username', '$email', '$password')";
+        if ($stmt = mysqli_prepare($link, $sql)) {
+            # bind varibales to the prepared statement as parameters
+            mysqli_stmt_bind_param($stmt, "sss", $username, $email, $hashed_password);
 
-        if (mysqli_query($conn, $sql)) {
-            echo "<script>window.location.href='http://localhost/php-login/login.php'</script>";
+            # set hashed password
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+            # execute the statement 
+            if (mysqli_stmt_execute($stmt)) {
+                echo "<script>alert('You have successfully registered');</script>";
+                echo "<script>window.location.href='login.php'</script>";
+                exit;
+            }
         }
+        # close statement
+        mysqli_stmt_close($stmt);
     }
+    # close connection
+    mysqli_close($link);
 }
 ?>
 
@@ -84,7 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="form-wrap border rounded p-4">
                     <h1 class="mb-2">Sign Up</h1>
                     <p>Please fill this form to register</p>
-                    <form action="register.php" method="post">
+                    <form action="<?= htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
                             <input type="text" name="username" class="form-control" id="username" value="<?= $username; ?>">
