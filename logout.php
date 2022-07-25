@@ -1,13 +1,13 @@
 <?php
-#start session
+# Initialize the session
 session_start();
 
-# usnet session varibales
-$_SERVER = array();
+# Unset all session variables
+$_SESSION = array();
 
-# destroy session
+# Destroy the session
 session_destroy();
 
-# redirect to login page
-echo "<script>window.location.href='http://localhost/PHP-MySQL-Login/login.php'</script>";
-exit();
+# Redirect to login page
+echo "<script>" . "window.location.href='./login.php';" . "</script>";
+exit;
