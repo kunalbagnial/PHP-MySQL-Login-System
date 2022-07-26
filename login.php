@@ -8,7 +8,6 @@ if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] == TRUE) {
   exit;
 }
 
-
 # Include connection
 require_once "./config.php";
 
@@ -39,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       # Bind variables to the statement as parameters
       mysqli_stmt_bind_param($stmt, "ss", $param_user_login, $param_user_login);
 
-      # Set paramters
+      # Set parameters
       $param_user_login = $user_login;
 
       # Execute the statement
