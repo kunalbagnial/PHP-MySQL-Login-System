@@ -1,7 +1,7 @@
 # PHP-MySQL-Login-System
 User login and registration system built using PHP and MySQL .
 
-**Live Project URL -** [PHP-MyQL-Login-System](https://live-demo97.000webhostapp.com/)
+**Live Project URL -** [PHP-MySQL-Login-System](https://live-demo97.000webhostapp.com/)
 
 ![screenshot](./img/screenshot-1.png)
 ![screenshot](./img/screenshot-2.png)
