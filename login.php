@@ -54,8 +54,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           if (mysqli_stmt_fetch($stmt)) {
             # Check if password is correct
             if (password_verify($user_password, $hashed_password)) {
-              # Start a new session
-              session_start();
 
               # Store data in session variables
               $_SESSION["id"] = $id;
